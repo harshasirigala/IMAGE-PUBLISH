@@ -1,4 +1,4 @@
-FROM rust:1.77-slim AS builder
+FROM rust:latest AS builder
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
@@ -15,10 +15,11 @@ RUN rm -rf src
 COPY src ./src
 RUN touch src/main.rs && cargo build --release
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -27,5 +28,7 @@ COPY --from=builder /app/target/release/mqtt-publisher .
 ENV MODE=mock
 ENV DEVICE_ID=cam01
 ENV INTERVAL_SECS=5
+ENV S3_BUCKET=cam01-images
+ENV WATCH_DIR=/app/snapshots
 
 CMD ["./mqtt-publisher"]
