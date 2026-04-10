@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cam03
+  namespace: mqtt-cameras
+  labels:
+    app: mqtt-camera
+    camera: cam03
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      camera: cam03
+  template:
+    metadata:
+      labels:
+        app: mqtt-camera
+        camera: cam03
+    spec:
+      containers:
+        - name: mqtt-publisher
+          image: sirigala0805/mqtt-publisher:latest
+          imagePullPolicy: Always
+          env:
+            - name: DEVICE_ID
+              value: "cam03"
+            - name: MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: mqtt-config
+                  key: MODE
+            - name: AWS_IOT_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: mqtt-config
+                  key: AWS_IOT_ENDPOINT
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: mqtt-config
+                  key: AWS_REGION
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: mqtt-config
+                  key: S3_BUCKET
+            - name: WATCH_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: mqtt-config
+                  key: WATCH_DIR
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+          volumeMounts:
+            - name: certs
+              mountPath: /app/certs
+              readOnly: true
+            - name: snapshots
+              mountPath: /app/snapshots
+      volumes:
+        - name: certs
+          secret:
+            secretName: aws-certs
+        - name: snapshots
+          hostPath:
+            path: /mnt/snapshots
+            type: DirectoryOrCreate
