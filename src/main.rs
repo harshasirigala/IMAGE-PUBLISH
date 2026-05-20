@@ -1,8 +1,9 @@
 mod image_publisher;
 
-use rumqttc::{AsyncClient, Event, MqttOptions, Packet, Transport, TlsConfiguration};
+use rumqttc::{AsyncClient, Event, MqttOptions, Packet, Transport, TlsConfiguration, QoS};
 use std::{fs, time::Duration};
 use tokio::time;
+use tokio::sync::mpsc;
 
 fn build_tls_config() -> TlsConfiguration {
     let ca   = fs::read("certs/ca.pem")        .expect("Missing certs/ca.pem");
@@ -25,17 +26,21 @@ async fn main() {
         .unwrap_or_else(|_| "/app/snapshots".to_string());
 
     let image_topic = format!("images/{}/events", device_id);
+    let cmd_topic   = format!("commands/{}", device_id);
 
     let (host, port) = match mode.as_str() {
         "aws" => (aws_endpoint.clone(), 8883u16),
         _     => ("test.mosquitto.org".to_string(), 1883u16),
     };
 
-    println!("  Mode    : {:26} ", mode);
-    println!("  Device  : {:26} ", device_id);
-    println!("  Broker  : {:26} ", host);
-    println!("  S3      : {:26} ", s3_bucket);
-    println!("  Watching: {:26} ", watch_dir);
+    println!("  Mode    : {}", mode);
+    println!("  Device  : {}", device_id);
+    println!("  Broker  : {}", host);
+    println!("  S3      : {}", s3_bucket);
+    println!("  Watching: {}", watch_dir);
+
+    // Channel to trigger capture from command listener
+    let (trigger_tx, trigger_rx) = mpsc::channel::<()>(10);
 
     // ── MQTT setup ────────────────────────────────────────────────────────
     let client_id = format!("{}-{}", device_id, timestamp());
@@ -48,18 +53,22 @@ async fn main() {
 
     let (client, mut eventloop) = AsyncClient::new(opts, 20);
 
-    // ── Image watcher + S3 uploader ───────────────────────────────────────
-    let client_clone = client.clone();
-    let device_clone = device_id.clone();
+    // ── Image publisher ───────────────────────────────────────────────────
+    let client_clone  = client.clone();
+    let device_clone  = device_id.clone();
+    let watch_clone   = watch_dir.clone();
+    let bucket_clone  = s3_bucket.clone();
+    let topic_clone   = image_topic.clone();
 
     tokio::spawn(async move {
         time::sleep(Duration::from_secs(2)).await;
         image_publisher::run_image_publisher(
             client_clone,
             device_clone,
-            watch_dir,
-            s3_bucket,
-            image_topic,
+            watch_clone,
+            bucket_clone,
+            topic_clone,
+            trigger_rx,
         ).await;
     });
 
@@ -67,7 +76,21 @@ async fn main() {
     loop {
         match eventloop.poll().await {
             Ok(Event::Incoming(Packet::ConnAck(_))) => {
-                println!("Connected to AWS IoT Core!\n");
+                println!("Connected to AWS IoT Core!");
+                // Subscribe to commands topic
+                client.subscribe(&cmd_topic, QoS::AtLeastOnce).await.ok();
+                println!("Subscribed to {}", cmd_topic);
+            }
+            Ok(Event::Incoming(Packet::Publish(msg))) => {
+                if let Ok(payload) = std::str::from_utf8(&msg.payload) {
+                    println!("Command received: {}", payload);
+                    if let Ok(cmd) = serde_json::from_str::<serde_json::Value>(payload) {
+                        if cmd["command"] == "capture" {
+                            println!("Capture triggered by command!");
+                            trigger_tx.send(()).await.ok();
+                        }
+                    }
+                }
             }
             Ok(_) => {}
             Err(e) => {

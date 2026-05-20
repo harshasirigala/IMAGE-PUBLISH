@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Records — IoT Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #F5C800;
+      --yellow-light: #FFF8CC;
+      --yellow-dark: #D4A800;
+      --black: #111111;
+      --grey: #444444;
+      --light-grey: #F2F2F2;
+      --mid-grey: #DDDDDD;
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      border-bottom: 2px solid var(--black);
+      background: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; }
+    .nav-logo span { background: var(--yellow); padding: 2px 8px; margin-left: 6px; }
+
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a {
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      color: var(--grey); padding: 6px 14px; border-radius: 4px; transition: all 0.15s;
+    }
+    .nav-links a:hover { background: var(--light-grey); color: var(--black); }
+    .nav-links a.active { background: var(--black); color: var(--white); }
+
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    #username-display { font-size: 13px; font-weight: 500; color: var(--grey); }
+    #logout-btn {
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      padding: 6px 16px; border: 1.5px solid var(--black); background: var(--white);
+      cursor: pointer; border-radius: 4px; transition: all 0.15s;
+    }
+    #logout-btn:hover { background: var(--black); color: var(--white); }
+
+    .page-header {
+      padding: 32px 40px 0;
+      border-bottom: 1px solid var(--mid-grey);
+      margin-bottom: 32px;
+    }
+    .page-header h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-header p { font-size: 13px; color: var(--grey); padding-bottom: 20px; }
+
+    .content { padding: 0 40px 60px; }
+
+    .records-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .records-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--grey);
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--black);
+      background: var(--white);
+    }
+
+    .records-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--mid-grey);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .records-table tr:hover td { background: var(--light-grey); }
+
+    .cam-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--yellow);
+      padding: 3px 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .record-thumb {
+      width: 64px;
+      height: 48px;
+      object-fit: cover;
+      border: 1px solid var(--mid-grey);
+      cursor: pointer;
+      display: block;
+    }
+
+    .record-thumb:hover { opacity: 0.8; }
+
+    .timestamp {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--grey);
+    }
+
+    .view-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+      border-bottom: 1.5px solid var(--yellow);
+      padding-bottom: 1px;
+      white-space: nowrap;
+    }
+
+    .view-link:hover { border-bottom-color: var(--black); }
+
+    .loading {
+      padding: 48px;
+      text-align: center;
+      color: var(--grey);
+      font-size: 13px;
+    }
+
+    .empty-state {
+      padding: 48px;
+      text-align: center;
+      border: 1.5px dashed var(--mid-grey);
+      color: var(--grey);
+      font-size: 13px;
+    }
+
+    .records-count {
+      font-size: 12px;
+      color: var(--grey);
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Multicam <span>IoT</span></div>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="records.html" class="active">Records</a>
+  </div>
+  <div class="nav-right">
+    <span id="username-display"></span>
+    <button id="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h2>All Records</h2>
+  <p>Complete history of all captured image events</p>
+</div>
+
+<div class="content">
+  <div id="records-count" class="records-count"></div>
+  <div id="records-container"><div class="loading">Loading records...</div></div>
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8080';
+  let token = localStorage.getItem('token');
+  let username = localStorage.getItem('username');
+
+  if (!token) { window.location.href = 'index.html'; }
+
+  document.getElementById('username-display').textContent = username || '';
+
+  loadRecords();
+
+  async function loadRecords() {
+    const res = await fetch(`${API}/api/events`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const events = await res.json();
+    const container = document.getElementById('records-container');
+
+    if (!Array.isArray(events) || events.length === 0) {
+      container.innerHTML = '<div class="empty-state">No records found</div>';
+      return;
+    }
+
+    document.getElementById('records-count').textContent = `${events.length} records`;
+
+    container.innerHTML = '';
+    const table = document.createElement('table');
+    table.className = 'records-table';
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Preview</th>
+          <th>Camera</th>
+          <th>Timestamp</th>
+          <th>Bucket</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="records-body"></tbody>`;
+
+    container.appendChild(table);
+    const tbody = document.getElementById('records-body');
+
+    events.forEach(ev => {
+      const tr = document.createElement('tr');
+      const ts = new Date(ev.timestamp).toLocaleString();
+      tr.innerHTML = `
+        <td>
+          <img class="record-thumb" src="${ev.image_url}" alt="capture"
+               onclick="window.open('${ev.image_url}', '_blank')"
+               onerror="this.style.background='#eee';this.removeAttribute('src')" />
+        </td>
+        <td><span class="cam-tag">${ev.device_id}</span></td>
+        <td><span class="timestamp">${ts}</span></td>
+        <td style="font-size:12px;color:var(--grey)">${ev.bucket}</td>
+        <td><a class="view-link" href="${ev.image_url}" target="_blank">View →</a></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

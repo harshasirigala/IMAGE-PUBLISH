@@ -3,6 +3,7 @@ use chrono::Utc;
 use rumqttc::{AsyncClient, QoS};
 use serde::Serialize;
 use std::path::Path;
+use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 
 #[derive(Serialize)]
@@ -16,31 +17,33 @@ struct ImageEvent {
 }
 
 pub async fn run_image_publisher(
-    client:    AsyncClient,
-    device_id: String,
-    watch_dir: String,
-    bucket:    String,
-    topic:     String,
+    client:         AsyncClient,
+    device_id:      String,
+    watch_dir:      String,
+    bucket:         String,
+    topic:          String,
+    mut trigger_rx: mpsc::Receiver<()>,
 ) {
     println!("Watching folder: {}", watch_dir);
     println!("S3 bucket: {}", bucket);
     println!("MQTT topic: {}", topic);
 
-    // ── Setup AWS S3 client ───────────────────────────────────────────────
     let aws_config = aws_config::load_defaults(
         aws_config::BehaviorVersion::latest()
     ).await;
     let s3_client = aws_sdk_s3::Client::new(&aws_config);
 
-    println!("Watching for new images...\n");
+    println!("Watching for new images...");
 
     let mut last_seen: Option<std::time::SystemTime> = None;
 
     loop {
         sleep(Duration::from_secs(1)).await;
 
-        let watch_path = Path::new(&watch_dir);
+        // Check for manual trigger (non-blocking)
+        let manually_triggered = trigger_rx.try_recv().is_ok();
 
+        let watch_path = Path::new(&watch_dir);
         let entries = match std::fs::read_dir(watch_path) {
             Ok(e)  => e,
             Err(e) => {
@@ -51,7 +54,6 @@ pub async fn run_image_publisher(
 
         for entry in entries.flatten() {
             let path = entry.path();
-
             let ext = path
                 .extension()
                 .and_then(|e| e.to_str())
@@ -67,17 +69,16 @@ pub async fn run_image_publisher(
                 Err(_) => continue,
             };
 
-            let is_new = match last_seen {
+            let is_new = manually_triggered || match last_seen {
                 None       => true,
                 Some(last) => modified > last,
             };
 
             if is_new {
                 last_seen = Some(modified);
-                println!("New image detected: {:?}", path);
+                println!("Image detected: {:?}", path);
                 sleep(Duration::from_millis(500)).await;
 
-                // Upload and publish — errors handled as strings (Send safe)
                 match upload_to_s3(&s3_client, &path, &bucket, &device_id).await {
                     Ok((url, key)) => {
                         println!("Uploaded to S3: {}", url);
@@ -87,12 +88,11 @@ pub async fn run_image_publisher(
                     }
                     Err(e) => eprintln!("S3 upload failed: {}", e),
                 }
+                break;
             }
         }
     }
 }
-
-// ── Upload — returns String error (Send safe) ─────────────────────────────
 
 async fn upload_to_s3(
     client:    &aws_sdk_s3::Client,
@@ -125,8 +125,6 @@ async fn upload_to_s3(
     let url = format!("https://{}.s3.amazonaws.com/{}", bucket, key);
     Ok((url, key))
 }
-
-// ── Publish MQTT event ────────────────────────────────────────────────────
 
 async fn publish_event(
     client:    &AsyncClient,

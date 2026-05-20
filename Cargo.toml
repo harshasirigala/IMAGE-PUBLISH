@@ -4,13 +4,39 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rumqttc        = { version = "0.24", features = ["use-rustls"] }
-tokio          = { version = "1",    features = ["full"] }
-serde          = { version = "1",    features = ["derive"] }
-serde_json     = "1"
-rand           = "0.8"
-chrono         = { version = "0.4",  features = ["serde"] }
+rumqttc          = { version = "0.24", features = ["use-rustls"] }
+tokio            = { version = "1",    features = ["full"] }
+serde            = { version = "1",    features = ["derive"] }
+serde_json       = "1"
+rand             = "0.8"
+chrono           = { version = "0.4",  features = ["serde"] }
+aws-config       = "1"
+aws-sdk-s3       = "1"
 
-# AWS S3
-aws-config     = "1"
-aws-sdk-s3     = "1"
+# Web server + WebSocket
+axum             = { version = "0.7", features = ["ws"] }
+tower-http       = { version = "0.5", features = ["cors", "fs"] }
+
+# Auth
+jsonwebtoken     = "9"
+reqwest          = { version = "0.11", features = ["json"] }
+
+# Database
+sqlx             = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite"] }
+
+# AWS DynamoDB
+aws-sdk-dynamodb = "1"
+
+# Utilities
+uuid             = { version = "1", features = ["v4"] }
+dotenv           = "0.15"
+tracing          = "0.1"
+tracing-subscriber = "0.3"
+
+[[bin]]
+name = "camera"
+path = "src/main.rs"
+
+[[bin]]
+name = "backend"
+path = "src/backend/main.rs"

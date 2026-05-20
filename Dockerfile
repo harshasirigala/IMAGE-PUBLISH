@@ -1,34 +1,17 @@
-FROM rust:latest AS builder
-
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+FROM --platform=linux/arm64 rust:latest as builder
 
 WORKDIR /app
 
-COPY Cargo.toml ./
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
+RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 
+COPY Cargo.toml Cargo.lock ./
 COPY src ./src
-RUN touch src/main.rs && cargo build --release
 
-FROM debian:trixie-slim
+RUN cargo build --release --bin camera
 
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    libssl3 \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM --platform=linux/arm64 rust:latest
 WORKDIR /app
-COPY --from=builder /app/target/release/mqtt-publisher .
-
-ENV MODE=mock
-ENV DEVICE_ID=cam01
-ENV INTERVAL_SECS=5
-ENV S3_BUCKET=cam01-images
-ENV WATCH_DIR=/app/snapshots
-
-CMD ["./mqtt-publisher"]
+COPY --from=builder /app/target/release/camera .
+COPY certs ./certs
+RUN mkdir -p /app/snapshots
+CMD ["./camera"]
