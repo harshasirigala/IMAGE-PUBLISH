@@ -1,86 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IoT Camera Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #F5C800;
+      --yellow-light: #FFF8CC;
+      --yellow-dark: #D4A800;
+      --black: #111111;
+      --grey: #444444;
+      --light-grey: #F2F2F2;
+      --mid-grey: #DDDDDD;
+      --white: #FFFFFF;
+      --red: #E53935;
+      --green: #2E7D32;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      border-bottom: 2px solid var(--black);
+      background: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--black);
+    }
+
+    .nav-logo span {
+      background: var(--yellow);
+      padding: 2px 8px;
+      margin-left: 6px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--grey);
+      padding: 6px 14px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    .nav-links a:hover { background: var(--light-grey); color: var(--black); }
+    .nav-links a.active { background: var(--black); color: var(--white); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #username-display {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--grey);
+    }
+
+    #logout-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 16px;
+      border: 1.5px solid var(--black);
+      background: var(--white);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    #logout-btn:hover { background: var(--black); color: var(--white); }
+
+    /* ── LOGIN ── */
+    #login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--white);
+    }
+
+    .login-box {
+      width: 380px;
+      border: 2px solid var(--black);
+      padding: 48px 40px;
+    }
+
+    .login-box h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .login-box p {
+      font-size: 13px;
+      color: var(--grey);
+      margin-bottom: 32px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--mid-grey);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border 0.15s;
+    }
+
+    .login-box input:focus { border-color: var(--black); }
+
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: var(--yellow);
+      border: 2px solid var(--black);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 8px;
+    }
+
+    .login-box button:hover { background: var(--yellow-dark); }
+
+    #login-error {
+      font-size: 12px;
+      color: var(--red);
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* ── MAIN ── */
+    #main-page { display: none; }
+
+    .page-header {
+      padding: 32px 40px 0;
+      border-bottom: 1px solid var(--mid-grey);
+      margin-bottom: 32px;
+    }
+
+    .page-header h2 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 13px;
+      color: var(--grey);
+      padding-bottom: 20px;
+    }
+
+    .content { padding: 0 40px 60px; }
+
+    /* ── CAMERAS ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--grey);
+      margin-bottom: 16px;
+    }
+
+    .cameras-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .camera-card {
+      border: 1.5px solid var(--mid-grey);
+      padding: 20px;
+      transition: border-color 0.15s;
+    }
+
+    .camera-card:hover { border-color: var(--black); }
+
+    .camera-id {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .camera-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--grey);
+      margin-bottom: 16px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4CAF50;
+    }
+
+    .capture-btn {
+      width: 100%;
+      padding: 9px;
+      background: var(--yellow);
+      border: 1.5px solid var(--black);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .capture-btn:hover { background: var(--yellow-dark); }
+    .capture-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── LIVE EVENTS ── */
+    .live-events-section { margin-bottom: 48px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    #events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .event-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border: 1px solid var(--mid-grey);
+      background: var(--white);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .event-cam-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--yellow);
+      padding: 3px 8px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .event-thumb {
+      width: 48px;
+      height: 36px;
+      object-fit: cover;
+      border: 1px solid var(--mid-grey);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .event-thumb:hover { opacity: 0.8; }
+
+    .event-meta {
+      flex: 1;
+      font-size: 12px;
+      color: var(--grey);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .event-view {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+      border-bottom: 1.5px solid var(--yellow);
+      padding-bottom: 1px;
+      white-space: nowrap;
+    }
+
+    .event-view:hover { border-bottom-color: var(--black); }
+
+    .empty-state {
+      padding: 32px;
+      text-align: center;
+      border: 1.5px dashed var(--mid-grey);
+      color: var(--grey);
+      font-size: 13px;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- LOGIN PAGE -->
-  <div id="login-page" class="page">
-    <div class="login-box">
-      <h1>IoT Camera Dashboard</h1>
-      <p class="login-sub">Sign in to view your cameras</p>
-      <div class="form-group">
-        <input type="text" id="username" placeholder="Username"/>
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-box">
+    <h1>IoT Camera<br>Dashboard</h1>
+    <p>Sign in to monitor your camera network</p>
+    <input type="text" id="login-username" placeholder="Username" />
+    <input type="password" id="login-password" placeholder="Password" />
+    <button onclick="login()">Sign in</button>
+    <div id="login-error">Invalid username or password</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-page">
+  <nav>
+    <div class="nav-logo">Multicam <span>IoT</span></div>
+    <div class="nav-links">
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="records.html">Records</a>
+    </div>
+    <div class="nav-right">
+      <span id="username-display"></span>
+      <button id="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h2>Dashboard</h2>
+    <p>Monitor live camera feeds and trigger captures</p>
+  </div>
+
+  <div class="content">
+    <!-- Cameras -->
+    <div class="section-label">Camera Pods</div>
+    <div class="cameras-grid" id="cameras-grid"></div>
+
+    <!-- Live Events -->
+    <div class="live-events-section">
+      <div class="section-header">
+        <div class="section-label" style="margin:0">Live Events</div>
+        <div class="live-dot"></div>
       </div>
-      <div class="form-group">
-        <input type="password" id="password" placeholder="Password"/>
+      <div id="events-list">
+        <div class="empty-state">Waiting for events...</div>
       </div>
-      <button id="login-btn" onclick="login()">Login</button>
-      <button id="register-btn" onclick="register()">Register</button>
-      <p id="login-error" class="error"></p>
     </div>
   </div>
+</div>
 
-  <!-- DASHBOARD PAGE -->
-  <div id="dashboard-page" class="page hidden">
+<script>
+  const API = 'http://127.0.0.1:8080';
+  let token = localStorage.getItem('token');
+  let username = localStorage.getItem('username');
+  let ws = null;
 
-    <!-- Header -->
-    <header>
-      <div class="header-left">
-        <h2>IoT Camera Dashboard</h2>
-      </div>
-      <div class="header-right">
-        <span id="header-user"></span>
-        <button onclick="logout()">Logout</button>
-      </div>
-    </header>
+  // ── Init ──
+  if (token) showMain();
+  else showLogin();
 
-    <main>
+  function showLogin() {
+    document.getElementById('login-page').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+  }
 
-      <!-- Camera Cards -->
-      <section>
-        <h3>Cameras</h3>
-        <div id="camera-cards" class="cards-row"></div>
-      </section>
+  function showMain() {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('main-page').style.display = 'block';
+    document.getElementById('username-display').textContent = username || '';
+    loadCameras();
+    connectWebSocket();
+  }
 
-      <!-- Live Event Feed -->
-      <section>
-        <h3>Live Events <span class="live-dot"></span></h3>
-        <div id="event-feed" class="event-feed"></div>
-      </section>
+  async function login() {
+    const u = document.getElementById('login-username').value;
+    const p = document.getElementById('login-password').value;
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+    if (data.token) {
+      token = data.token;
+      username = data.username;
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', username);
+      document.getElementById('login-error').style.display = 'none';
+      showMain();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
 
-      <!-- Image Gallery -->
-      <section>
-        <h3>Image Gallery</h3>
-        <div id="cam-tabs" class="tabs"></div>
-        <div id="image-gallery" class="gallery"></div>
-      </section>
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    token = null;
+    if (ws) ws.close();
+    showLogin();
+  }
 
-      <!-- DynamoDB Records -->
-      <section>
-        <h3>All Records</h3>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Camera</th>
-                <th>Timestamp</th>
-                <th>Image URL</th>
-                <th>Bucket</th>
-              </tr>
-            </thead>
-            <tbody id="events-table"></tbody>
-          </table>
-        </div>
-      </section>
+  // ── Cameras ──
+  async function loadCameras() {
+    const res = await fetch(`${API}/api/cameras`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const cameras = await res.json();
+    if (!Array.isArray(cameras)) return;
+    const grid = document.getElementById('cameras-grid');
+    grid.innerHTML = '';
+    cameras.forEach(cam => {
+      grid.innerHTML += `
+        <div class="camera-card">
+          <div class="camera-id">${cam.camera_id}</div>
+          <div class="camera-status">
+            <div class="status-dot"></div>
+            ${cam.status}
+          </div>
+          <button class="capture-btn" onclick="capture('${cam.camera_id}', this)">
+            📷 Capture
+          </button>
+        </div>`;
+    });
+  }
 
-    </main>
-  </div>
+  async function capture(cam, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Capturing...';
+    const res = await fetch(`${API}/api/command/${cam}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ command: 'capture' })
+    });
+    const data = await res.json();
+    console.log('Command sent:', data);
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '📷 Capture';
+    }, 3000);
+  }
 
-  <script src="app.js"></script>
+  // ── WebSocket ──
+  function connectWebSocket() {
+    ws = new WebSocket(`ws://127.0.0.1:8080/ws`);
+    ws.onopen = () => console.log('WebSocket connected');
+    ws.onmessage = (e) => {
+      try {
+        const event = JSON.parse(e.data);
+        addEvent(event);
+      } catch {}
+    };
+    ws.onclose = () => setTimeout(connectWebSocket, 3000);
+  }
+
+  function addEvent(event) {
+    const list = document.getElementById('events-list');
+    const empty = list.querySelector('.empty-state');
+    if (empty) empty.remove();
+
+    const time = new Date().toLocaleTimeString();
+    const item = document.createElement('div');
+    item.className = 'event-item';
+    item.innerHTML = `
+      <span class="event-cam-tag">${event.device_id}</span>
+      <img class="event-thumb" src="${event.image_url}" alt="capture"
+           onclick="window.open('${event.image_url}', '_blank')"
+           onerror="this.style.display='none'" />
+      <span class="event-meta">${time} — image captured</span>
+      <a class="event-view" href="${event.image_url}" target="_blank">View →</a>
+    `;
+    list.insertBefore(item, list.firstChild);
+
+    // Keep max 20 events
+    while (list.children.length > 20) list.removeChild(list.lastChild);
+  }
+
+  // Enter key on login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
+      login();
+    }
+  });
+</script>
 </body>
 </html>

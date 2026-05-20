@@ -25,24 +25,27 @@ fn build_opts() -> MqttOptions {
 pub async fn start_and_get_client(tx: broadcast::Sender<String>) -> (AsyncClient, broadcast::Sender<String>) {
     let (client, mut eventloop) = AsyncClient::new(build_opts(), 20);
 
-    // Wait for connection before returning
+    let client_clone = client.clone();
     tokio::spawn(async move {
-        run_loop(&mut eventloop, tx).await;
+        run_loop(&mut eventloop, tx, client_clone).await;
     });
 
     (client, broadcast::channel::<String>(1).0)
 }
 
 pub async fn run(tx: broadcast::Sender<String>) {
-    let (_client, mut eventloop) = AsyncClient::new(build_opts(), 20);
-    run_loop(&mut eventloop, tx).await;
+    let (client, mut eventloop) = AsyncClient::new(build_opts(), 20);
+    run_loop(&mut eventloop, tx, client).await;
 }
 
-async fn run_loop(eventloop: &mut EventLoop, tx: broadcast::Sender<String>) {
+async fn run_loop(eventloop: &mut EventLoop, tx: broadcast::Sender<String>, client: AsyncClient) {
     loop {
         match eventloop.poll().await {
             Ok(Event::Incoming(Packet::ConnAck(_))) => {
-                println!("MQTT listener subscribed to images/+/events");
+                let _ = client
+                    .subscribe("images/+/events", QoS::AtLeastOnce)
+                    .await;
+                println!("MQTT listener connected and subscribed to images/+/events");
             }
             Ok(Event::Incoming(Packet::Publish(msg))) => {
                 if let Ok(payload) = std::str::from_utf8(&msg.payload) {

@@ -38,41 +38,11 @@ pub async fn run_image_publisher(
     let mut last_seen: Option<std::time::SystemTime> = None;
 
     loop {
-        // Check for trigger command (non-blocking, 1 second timeout)
-        let triggered = tokio::select! {
-            msg = trigger_rx.recv() => msg.is_some(),
-            _ = sleep(Duration::from_secs(1)) => false,
-        };
+        sleep(Duration::from_secs(1)).await;
 
-        if triggered {
-            println!("Manual capture triggered!");
-            let watch_path = Path::new(&watch_dir);
-            if let Ok(entries) = std::fs::read_dir(watch_path) {
-                for entry in entries.flatten() {
-                    let path = entry.path();
-                    let ext = path
-                        .extension()
-                        .and_then(|e| e.to_str())
-                        .unwrap_or("")
-                        .to_lowercase();
-                    if ext == "jpg" || ext == "jpeg" || ext == "png" {
-                        match upload_to_s3(&s3_client, &path, &bucket, &device_id).await {
-                            Ok((url, key)) => {
-                                println!("Uploaded to S3: {}", url);
-                                publish_event(
-                                    &client, &topic, &device_id, &url, &bucket, &key,
-                                ).await;
-                            }
-                            Err(e) => eprintln!("S3 upload failed: {}", e),
-                        }
-                        break;
-                    }
-                }
-            }
-            continue;
-        }
+        // Check for manual trigger (non-blocking)
+        let manually_triggered = trigger_rx.try_recv().is_ok();
 
-        // File watcher
         let watch_path = Path::new(&watch_dir);
         let entries = match std::fs::read_dir(watch_path) {
             Ok(e)  => e,
@@ -99,14 +69,14 @@ pub async fn run_image_publisher(
                 Err(_) => continue,
             };
 
-            let is_new = match last_seen {
+            let is_new = manually_triggered || match last_seen {
                 None       => true,
                 Some(last) => modified > last,
             };
 
             if is_new {
                 last_seen = Some(modified);
-                println!("New image detected: {:?}", path);
+                println!("Image detected: {:?}", path);
                 sleep(Duration::from_millis(500)).await;
 
                 match upload_to_s3(&s3_client, &path, &bucket, &device_id).await {
@@ -118,6 +88,7 @@ pub async fn run_image_publisher(
                     }
                     Err(e) => eprintln!("S3 upload failed: {}", e),
                 }
+                break;
             }
         }
     }

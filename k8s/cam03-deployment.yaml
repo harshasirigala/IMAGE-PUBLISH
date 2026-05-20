@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: mqtt-publisher
-          image: sirigala0805/mqtt-publisher:stable
+          image: sirigala0805/mqtt-publisher:arm64
           imagePullPolicy: Always
           env:
             - name: DEVICE_ID

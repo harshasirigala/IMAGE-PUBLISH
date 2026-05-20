@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Gallery — IoT Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #F5C800;
+      --yellow-light: #FFF8CC;
+      --yellow-dark: #D4A800;
+      --black: #111111;
+      --grey: #444444;
+      --light-grey: #F2F2F2;
+      --mid-grey: #DDDDDD;
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      border-bottom: 2px solid var(--black);
+      background: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; }
+    .nav-logo span { background: var(--yellow); padding: 2px 8px; margin-left: 6px; }
+
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a {
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      color: var(--grey); padding: 6px 14px; border-radius: 4px; transition: all 0.15s;
+    }
+    .nav-links a:hover { background: var(--light-grey); color: var(--black); }
+    .nav-links a.active { background: var(--black); color: var(--white); }
+
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    #username-display { font-size: 13px; font-weight: 500; color: var(--grey); }
+    #logout-btn {
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      padding: 6px 16px; border: 1.5px solid var(--black); background: var(--white);
+      cursor: pointer; border-radius: 4px; transition: all 0.15s;
+    }
+    #logout-btn:hover { background: var(--black); color: var(--white); }
+
+    .page-header {
+      padding: 32px 40px 0;
+      border-bottom: 1px solid var(--mid-grey);
+      margin-bottom: 32px;
+    }
+    .page-header h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-header p { font-size: 13px; color: var(--grey); padding-bottom: 20px; }
+
+    .content { padding: 0 40px 60px; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--mid-grey);
+    }
+
+    .tab {
+      padding: 10px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--grey);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+
+    .tab:hover { color: var(--black); }
+    .tab.active { color: var(--black); border-bottom-color: var(--yellow); font-weight: 600; }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .gallery-item {
+      border: 1.5px solid var(--mid-grey);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .gallery-item:hover {
+      border-color: var(--black);
+      transform: translateY(-2px);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      background: var(--light-grey);
+    }
+
+    .gallery-item-meta {
+      padding: 10px 12px;
+      border-top: 1px solid var(--mid-grey);
+    }
+
+    .gallery-item-key {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--grey);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .loading {
+      padding: 48px;
+      text-align: center;
+      color: var(--grey);
+      font-size: 13px;
+    }
+
+    .empty-state {
+      padding: 48px;
+      text-align: center;
+      border: 1.5px dashed var(--mid-grey);
+      color: var(--grey);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Multicam <span>IoT</span></div>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="gallery.html" class="active">Gallery</a>
+    <a href="records.html">Records</a>
+  </div>
+  <div class="nav-right">
+    <span id="username-display"></span>
+    <button id="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h2>Image Gallery</h2>
+  <p>Browse captured images by camera</p>
+</div>
+
+<div class="content">
+  <div class="tabs" id="cam-tabs"></div>
+  <div id="gallery-container"><div class="loading">Loading images...</div></div>
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8080';
+  let token = localStorage.getItem('token');
+  let username = localStorage.getItem('username');
+
+  if (!token) { window.location.href = 'index.html'; }
+
+  document.getElementById('username-display').textContent = username || '';
+
+  const cameras = ['cam01', 'cam02', 'cam03', 'cam04'];
+  let activeCam = 'cam01';
+
+  // Build tabs
+  const tabs = document.getElementById('cam-tabs');
+  cameras.forEach((cam, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (i === 0 ? ' active' : '');
+    btn.textContent = cam;
+    btn.onclick = () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      activeCam = cam;
+      loadImages(cam);
+    };
+    tabs.appendChild(btn);
+  });
+
+  loadImages('cam01');
+
+  async function loadImages(cam) {
+    const container = document.getElementById('gallery-container');
+    container.innerHTML = '<div class="loading">Loading images...</div>';
+
+    const res = await fetch(`${API}/api/images/${cam}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const images = await res.json();
+
+    if (!Array.isArray(images) || images.length === 0) {
+      container.innerHTML = '<div class="empty-state">No images found for ' + cam + '</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'gallery-grid';
+
+    images.forEach(img => {
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.onclick = () => window.open(img.url, '_blank');
+      const filename = img.key.split('/').pop();
+      item.innerHTML = `
+        <img src="${img.url}" alt="${filename}" loading="lazy"
+             onerror="this.style.background='#eee';this.alt='Image unavailable'" />
+        <div class="gallery-item-meta">
+          <div class="gallery-item-key">${filename}</div>
+        </div>`;
+      grid.appendChild(item);
+    });
+
+    container.appendChild(grid);
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

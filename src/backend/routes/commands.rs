@@ -52,6 +52,14 @@ pub async fn send_command(
         ));
     }
 
+    // Trigger webcam capture on host machine
+    if body.command == "capture" {
+        tokio::process::Command::new("python3")
+            .arg("/Users/harshasirigala/mqtt-publisher/capture.py")
+            .spawn()
+            .ok();
+    }
+
     // Use shared MQTT client from AppState
     let topic = format!("commands/{}", cam);
     let payload = serde_json::json!({

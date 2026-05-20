@@ -9,6 +9,7 @@ use std::env;
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
 use tracing::info;
 
 mod auth;
@@ -66,6 +67,7 @@ async fn main() {
         .route("/api/images/:cam",  get(routes::images::get_images))
         .route("/api/command/:cam", post(routes::commands::send_command))
         .route("/ws",               get(routes::ws::ws_handler))
+        .nest_service("/app", ServeDir::new("src/frontend"))
         .layer(cors)
         .with_state(state);
 
