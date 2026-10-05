@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # Backend Axum server
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: multicam-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Server config
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      
+      # Database
+      DATABASE_URL: sqlite:////app/data/app.db
+      
+      # JWT
+      JWT_SECRET: your-secret-key-change-in-prod-12345
+      
+      # MQTT (connect to test broker)
+      AWS_IOT_ENDPOINT: test.mosquitto.org
+      MODE: mock
+      
+      # AWS (for DynamoDB/S3 - using local defaults)
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: local-images
+      AWS_DYNAMODB_TABLE: image_events
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      
+      # Capture script path
+      CAPTURE_SCRIPT_PATH: /app/capture.py
+      
+      # Google OAuth (optional, for now)
+      GOOGLE_CLIENT_ID: your-google-client-id
+      GOOGLE_CLIENT_SECRET: your-google-client-secret
+      REDIRECT_URL: http://localhost:8080/auth/callback
+    
+    volumes:
+      # Persistent database
+      - ./data:/app/data
+      # Shared snapshots folder
+      - ./snapshots:/app/snapshots
+    
+    networks:
+      - multicam-network
+    
+    depends_on:
+      - cam01
+      - cam02
+      - cam03
+      - cam04
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Camera 1 - MQTT publisher
+  cam01:
+    build:
+      context: .
+      dockerfile: Dockerfile.camera
+    container_name: multicam-cam01
+    environment:
+      DEVICE_ID: cam01
+      MODE: mock
+      AWS_IOT_ENDPOINT: test.mosquitto.org
+      AWS_REGION: us-east-1
+      S3_BUCKET: local-images
+      WATCH_DIR: /app/snapshots
+    
+    volumes:
+      - ./snapshots:/app/snapshots
+    
+    networks:
+      - multicam-network
+
+  # Camera 2 - MQTT publisher
+  cam02:
+    build:
+      context: .
+      dockerfile: Dockerfile.camera
+    container_name: multicam-cam02
+    environment:
+      DEVICE_ID: cam02
+      MODE: mock
+      AWS_IOT_ENDPOINT: test.mosquitto.org
+      AWS_REGION: us-east-1
+      S3_BUCKET: local-images
+      WATCH_DIR: /app/snapshots
+    
+    volumes:
+      - ./snapshots:/app/snapshots
+    
+    networks:
+      - multicam-network
+
+  # Camera 3 - MQTT publisher
+  cam03:
+    build:
+      context: .
+      dockerfile: Dockerfile.camera
+    container_name: multicam-cam03
+    environment:
+      DEVICE_ID: cam03
+      MODE: mock
+      AWS_IOT_ENDPOINT: test.mosquitto.org
+      AWS_REGION: us-east-1
+      S3_BUCKET: local-images
+      WATCH_DIR: /app/snapshots
+    
+    volumes:
+      - ./snapshots:/app/snapshots
+    
+    networks:
+      - multicam-network
+
+  # Camera 4 - MQTT publisher
+  cam04:
+    build:
+      context: .
+      dockerfile: Dockerfile.camera
+    container_name: multicam-cam04
+    environment:
+      DEVICE_ID: cam04
+      MODE: mock
+      AWS_IOT_ENDPOINT: test.mosquitto.org
+      AWS_REGION: us-east-1
+      S3_BUCKET: local-images
+      WATCH_DIR: /app/snapshots
+    
+    volumes:
+      - ./snapshots:/app/snapshots
+    
+    networks:
+      - multicam-network
+
+networks:
+  multicam-network:
+    driver: bridge
