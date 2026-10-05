@@ -58,18 +58,19 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/health",           get(routes::health::health_check))
-        .route("/auth/login",       post(routes::auth::login))
-        .route("/auth/register",    post(routes::auth::register))
-        .route("/auth/callback",    get(routes::auth::callback))
-        .route("/api/cameras",      get(routes::cameras::get_cameras))
-        .route("/api/events",       get(routes::events::get_events))
-        .route("/api/images/:cam",  get(routes::images::get_images))
-        .route("/api/command/:cam", post(routes::commands::send_command))
-        .route("/ws",               get(routes::ws::ws_handler))
-        .nest_service("/app", ServeDir::new("src/frontend"))
-        .layer(cors)
-        .with_state(state);
+    .route("/health",           get(routes::health::health_check))
+    .route("/auth/login",       post(routes::auth::login))
+    .route("/auth/register",    post(routes::auth::register))
+    .route("/auth/google",      get(routes::auth::google_login))
+    .route("/auth/callback",    get(routes::auth::callback))
+    .route("/api/cameras",      get(routes::cameras::get_cameras))
+    .route("/api/events",       get(routes::events::get_events))
+    .route("/api/images/:cam",  get(routes::images::get_images))
+    .route("/api/command/:cam", post(routes::commands::send_command))
+    .route("/ws",               get(routes::ws::ws_handler))
+    .nest_service("/app", ServeDir::new("src/frontend"))
+    .layer(cors)
+    .with_state(state);
 
     let host = env::var("SERVER_HOST").unwrap_or("127.0.0.1".to_string());
     let port = env::var("SERVER_PORT").unwrap_or("8080".to_string());

@@ -43,8 +43,7 @@ pub async fn get_images(
     let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
     let s3 = aws_sdk_s3::Client::new(&config);
     let bucket = std::env::var("AWS_S3_BUCKET")
-        .unwrap_or("captured-images-013545650538-us-east-1-an".to_string());
-
+    .unwrap_or_else(|_| "local-images".to_string());
     // List objects for this camera
     let prefix = format!("images/{}/", cam);
     let result = s3

@@ -29,7 +29,6 @@
       min-height: 100vh;
     }
 
-    /* ── NAV ── */
     nav {
       display: flex;
       align-items: center;
@@ -43,304 +42,66 @@
       z-index: 100;
     }
 
-    .nav-logo {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.5px;
-      color: var(--black);
-    }
-
-    .nav-logo span {
-      background: var(--yellow);
-      padding: 2px 8px;
-      margin-left: 6px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--grey);
-      padding: 6px 14px;
-      border-radius: 4px;
-      transition: all 0.15s;
-    }
-
+    .nav-logo { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: var(--black); }
+    .nav-logo span { background: var(--yellow); padding: 2px 8px; margin-left: 6px; }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a { text-decoration: none; font-size: 13px; font-weight: 500; color: var(--grey); padding: 6px 14px; border-radius: 4px; transition: all 0.15s; }
     .nav-links a:hover { background: var(--light-grey); color: var(--black); }
     .nav-links a.active { background: var(--black); color: var(--white); }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    #username-display {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--grey);
-    }
-
-    #logout-btn {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 16px;
-      border: 1.5px solid var(--black);
-      background: var(--white);
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.15s;
-    }
-
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    #username-display { font-size: 13px; font-weight: 500; color: var(--grey); }
+    #logout-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 16px; border: 1.5px solid var(--black); background: var(--white); cursor: pointer; border-radius: 4px; transition: all 0.15s; }
     #logout-btn:hover { background: var(--black); color: var(--white); }
 
-    /* ── LOGIN ── */
-    #login-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--white);
-    }
+    #login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--white); }
 
-    .login-box {
-      width: 380px;
-      border: 2px solid var(--black);
-      padding: 48px 40px;
-    }
-
-    .login-box h1 {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .login-box p {
-      font-size: 13px;
-      color: var(--grey);
-      margin-bottom: 32px;
-    }
-
-    .login-box input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--mid-grey);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      margin-bottom: 12px;
-      outline: none;
-      transition: border 0.15s;
-    }
-
+    .login-box { width: 380px; border: 2px solid var(--black); padding: 48px 40px; }
+    .login-box h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .login-box p { font-size: 13px; color: var(--grey); margin-bottom: 32px; }
+    .login-box input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--mid-grey); font-family: 'DM Sans', sans-serif; font-size: 14px; margin-bottom: 12px; outline: none; transition: border 0.15s; }
     .login-box input:focus { border-color: var(--black); }
-
-    .login-box button {
-      width: 100%;
-      padding: 12px;
-      background: var(--yellow);
-      border: 2px solid var(--black);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      margin-top: 8px;
-    }
-
+    .login-box button { width: 100%; padding: 12px; background: var(--yellow); border: 2px solid var(--black); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
     .login-box button:hover { background: var(--yellow-dark); }
+    #login-error { font-size: 12px; color: var(--red); margin-top: 8px; display: none; }
 
-    #login-error {
-      font-size: 12px;
-      color: var(--red);
-      margin-top: 8px;
-      display: none;
-    }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider-line { flex: 1; height: 1px; background: var(--mid-grey); }
+    .divider-text { font-size: 12px; color: var(--grey); }
 
-    /* ── MAIN ── */
+    .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px; border: 1.5px solid var(--mid-grey); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--black); text-decoration: none; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .google-btn:hover { border-color: var(--black); background: var(--light-grey); }
+
     #main-page { display: none; }
-
-    .page-header {
-      padding: 32px 40px 0;
-      border-bottom: 1px solid var(--mid-grey);
-      margin-bottom: 32px;
-    }
-
-    .page-header h2 {
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: -0.5px;
-      margin-bottom: 4px;
-    }
-
-    .page-header p {
-      font-size: 13px;
-      color: var(--grey);
-      padding-bottom: 20px;
-    }
-
+    .page-header { padding: 32px 40px 0; border-bottom: 1px solid var(--mid-grey); margin-bottom: 32px; }
+    .page-header h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-header p { font-size: 13px; color: var(--grey); padding-bottom: 20px; }
     .content { padding: 0 40px 60px; }
 
-    /* ── CAMERAS ── */
-    .section-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--grey);
-      margin-bottom: 16px;
-    }
-
-    .cameras-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 48px;
-    }
-
-    .camera-card {
-      border: 1.5px solid var(--mid-grey);
-      padding: 20px;
-      transition: border-color 0.15s;
-    }
-
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--grey); margin-bottom: 16px; }
+    .cameras-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 48px; }
+    .camera-card { border: 1.5px solid var(--mid-grey); padding: 20px; transition: border-color 0.15s; }
     .camera-card:hover { border-color: var(--black); }
-
-    .camera-id {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .camera-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--grey);
-      margin-bottom: 16px;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #4CAF50;
-    }
-
-    .capture-btn {
-      width: 100%;
-      padding: 9px;
-      background: var(--yellow);
-      border: 1.5px solid var(--black);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
+    .camera-id { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .camera-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--grey); margin-bottom: 16px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4CAF50; }
+    .capture-btn { width: 100%; padding: 9px; background: var(--yellow); border: 1.5px solid var(--black); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
     .capture-btn:hover { background: var(--yellow-dark); }
     .capture-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ── LIVE EVENTS ── */
     .live-events-section { margin-bottom: 48px; }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4CAF50;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    #events-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 320px;
-      overflow-y: auto;
-    }
-
-    .event-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 16px;
-      border: 1px solid var(--mid-grey);
-      background: var(--white);
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .event-cam-tag {
-      font-size: 11px;
-      font-weight: 600;
-      background: var(--yellow);
-      padding: 3px 8px;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-
-    .event-thumb {
-      width: 48px;
-      height: 36px;
-      object-fit: cover;
-      border: 1px solid var(--mid-grey);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    #events-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+    .event-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border: 1px solid var(--mid-grey); background: var(--white); animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .event-cam-tag { font-size: 11px; font-weight: 600; background: var(--yellow); padding: 3px 8px; letter-spacing: 0.5px; white-space: nowrap; }
+    .event-thumb { width: 48px; height: 36px; object-fit: cover; border: 1px solid var(--mid-grey); cursor: pointer; flex-shrink: 0; }
     .event-thumb:hover { opacity: 0.8; }
-
-    .event-meta {
-      flex: 1;
-      font-size: 12px;
-      color: var(--grey);
-      font-family: 'DM Mono', monospace;
-    }
-
-    .event-view {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--black);
-      text-decoration: none;
-      border-bottom: 1.5px solid var(--yellow);
-      padding-bottom: 1px;
-      white-space: nowrap;
-    }
-
+    .event-meta { flex: 1; font-size: 12px; color: var(--grey); font-family: 'DM Mono', monospace; }
+    .event-view { font-size: 12px; font-weight: 600; color: var(--black); text-decoration: none; border-bottom: 1.5px solid var(--yellow); padding-bottom: 1px; white-space: nowrap; }
     .event-view:hover { border-bottom-color: var(--black); }
-
-    .empty-state {
-      padding: 32px;
-      text-align: center;
-      border: 1.5px dashed var(--mid-grey);
-      color: var(--grey);
-      font-size: 13px;
-    }
+    .empty-state { padding: 32px; text-align: center; border: 1.5px dashed var(--mid-grey); color: var(--grey); font-size: 13px; }
   </style>
 </head>
 <body>
@@ -354,6 +115,22 @@
     <input type="password" id="login-password" placeholder="Password" />
     <button onclick="login()">Sign in</button>
     <div id="login-error">Invalid username or password</div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">or</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <a href="http://127.0.0.1:8080/auth/google" class="google-btn">
+      <svg width="18" height="18" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Sign in with Google
+    </a>
   </div>
 </div>
 
@@ -378,11 +155,9 @@
   </div>
 
   <div class="content">
-    <!-- Cameras -->
     <div class="section-label">Camera Pods</div>
     <div class="cameras-grid" id="cameras-grid"></div>
 
-    <!-- Live Events -->
     <div class="live-events-section">
       <div class="section-header">
         <div class="section-label" style="margin:0">Live Events</div>
@@ -401,7 +176,18 @@
   let username = localStorage.getItem('username');
   let ws = null;
 
-  // ── Init ──
+  // Handle Google OAuth callback token in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const googleToken = urlParams.get('token');
+  const googleUsername = urlParams.get('username');
+  if (googleToken) {
+    token = googleToken;
+    username = googleUsername;
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   if (token) showMain();
   else showLogin();
 
@@ -447,7 +233,6 @@
     showLogin();
   }
 
-  // ── Cameras ──
   async function loadCameras() {
     const res = await fetch(`${API}/api/cameras`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -476,29 +261,19 @@
     btn.textContent = 'Capturing...';
     const res = await fetch(`${API}/api/command/${cam}`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ command: 'capture' })
     });
     const data = await res.json();
     console.log('Command sent:', data);
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = '📷 Capture';
-    }, 3000);
+    setTimeout(() => { btn.disabled = false; btn.textContent = '📷 Capture'; }, 3000);
   }
 
-  // ── WebSocket ──
   function connectWebSocket() {
     ws = new WebSocket(`ws://127.0.0.1:8080/ws`);
     ws.onopen = () => console.log('WebSocket connected');
     ws.onmessage = (e) => {
-      try {
-        const event = JSON.parse(e.data);
-        addEvent(event);
-      } catch {}
+      try { const event = JSON.parse(e.data); addEvent(event); } catch {}
     };
     ws.onclose = () => setTimeout(connectWebSocket, 3000);
   }
@@ -507,7 +282,6 @@
     const list = document.getElementById('events-list');
     const empty = list.querySelector('.empty-state');
     if (empty) empty.remove();
-
     const time = new Date().toLocaleTimeString();
     const item = document.createElement('div');
     item.className = 'event-item';
@@ -520,16 +294,11 @@
       <a class="event-view" href="${event.image_url}" target="_blank">View →</a>
     `;
     list.insertBefore(item, list.firstChild);
-
-    // Keep max 20 events
     while (list.children.length > 20) list.removeChild(list.lastChild);
   }
 
-  // Enter key on login
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
-      login();
-    }
+    if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') login();
   });
 </script>
 </body>

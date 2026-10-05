@@ -54,10 +54,12 @@ pub async fn send_command(
 
     // Trigger webcam capture on host machine
     if body.command == "capture" {
-        tokio::process::Command::new("python3")
-            .arg("/Users/harshasirigala/mqtt-publisher/capture.py")
-            .spawn()
-            .ok();
+    let capture_script = std::env::var("CAPTURE_SCRIPT_PATH")
+        .unwrap_or_else(|_| "./capture.py".to_string());
+    tokio::process::Command::new("python3")
+        .arg(&capture_script)
+        .spawn()
+        .ok();
     }
 
     // Use shared MQTT client from AppState
