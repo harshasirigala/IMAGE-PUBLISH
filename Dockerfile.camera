@@ -11,7 +11,7 @@ COPY src ./src
 RUN cargo build --release --bin camera
 
 # Runtime stage
-FROM debian:bookworm-slim
+FROM ubuntu:latest
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /app/target/release/camera .
 
 # Copy AWS IoT certificates (optional, for AWS mode)
-COPY certs ./certs 2>/dev/null || true
+COPY certs ./certs
 
 # Create snapshots directory for watching
 RUN mkdir -p /app/snapshots

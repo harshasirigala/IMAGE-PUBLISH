@@ -9,17 +9,29 @@ fn build_opts() -> MqttOptions {
     let mut opts = MqttOptions::new(client_id, &endpoint, 8883);
     opts.set_keep_alive(Duration::from_secs(30));
 
-    let ca   = fs::read("certs/ca.pem").unwrap_or_default();
-    let cert = fs::read("certs/device.crt.pem").unwrap_or_default();
-    let key  = fs::read("certs/device.key.pem").unwrap_or_default();
+    let ca   = fs::read("certs/ca.pem").Ok();
+    let cert = fs::read("certs/device.crt.pem").Ok();
+    let key  = fs::read("certs/device.key.pem").Ok();
 
-    let tls = TlsConfiguration::Simple {
-        ca,
-        alpn: None,
-        client_auth: Some((cert, key)),
-    };
-    opts.set_transport(Transport::tls_with_config(tls));
-    opts
+    if let (Some(ca), Some(cert), Some(key)) = (ca,cert,key){
+        let tls = TlsConfiguration::Simple{
+            ca,
+            alpn: None,
+            client_auth: Some((cert,key)),
+        };
+        opts.set_transport(Transport::tls_with_config(tls));
+        println!("using tls mode");
+    } else {
+        println!("using plain mqtt, tls certs not found")
+    }
+
+    // let tls = TlsConfiguration::Simple {
+    //     ca,
+    //     alpn: None,
+    //     client_auth: Some((cert, key)),
+    // };
+    // opts.set_transport(Transport::tls_with_config(tls));
+    // opts
 }
 
 pub async fn start_and_get_client(tx: broadcast::Sender<String>) -> (AsyncClient, broadcast::Sender<String>) {

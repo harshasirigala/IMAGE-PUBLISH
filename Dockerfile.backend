@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /app/target/release/backend .
 
 # Copy certs (may be empty for test.mosquitto.org mode)
-COPY certs ./certs 2>/dev/null || true
+COPY certs ./certs
 
 # Copy frontend files to serve
 COPY src/frontend ./src/frontend
