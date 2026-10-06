@@ -9,31 +9,26 @@ fn build_opts() -> MqttOptions {
     let mut opts = MqttOptions::new(client_id, &endpoint, 8883);
     opts.set_keep_alive(Duration::from_secs(30));
 
-    let ca   = fs::read("certs/ca.pem").Ok();
-    let cert = fs::read("certs/device.crt.pem").Ok();
-    let key  = fs::read("certs/device.key.pem").Ok();
+    // Try to read certs
+    let ca   = fs::read("certs/ca.pem").ok();
+    let cert = fs::read("certs/device.crt.pem").ok();
+    let key  = fs::read("certs/device.key.pem").ok();
 
-    if let (Some(ca), Some(cert), Some(key)) = (ca,cert,key){
-        let tls = TlsConfiguration::Simple{
+    // Only use TLS if all certs exist
+    if let (Some(ca), Some(cert), Some(key)) = (ca, cert, key) {
+        let tls = TlsConfiguration::Simple {
             ca,
             alpn: None,
-            client_auth: Some((cert,key)),
+            client_auth: Some((cert, key)),
         };
         opts.set_transport(Transport::tls_with_config(tls));
-        println!("using tls mode");
+        println!("Using TLS mode");
     } else {
-        println!("using plain mqtt, tls certs not found")
+        println!("TLS certs not found, using plain MQTT");
     }
-
-    // let tls = TlsConfiguration::Simple {
-    //     ca,
-    //     alpn: None,
-    //     client_auth: Some((cert, key)),
-    // };
-    // opts.set_transport(Transport::tls_with_config(tls));
-    // opts
+    
+    opts
 }
-
 pub async fn start_and_get_client(tx: broadcast::Sender<String>) -> (AsyncClient, broadcast::Sender<String>) {
     let (client, mut eventloop) = AsyncClient::new(build_opts(), 20);
 
