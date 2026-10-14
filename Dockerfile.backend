@@ -1,45 +1,70 @@
-# Build stage
-FROM rust:latest as builder
+name: Daily Job Scraper - Walk-ins + Regular Jobs
 
-WORKDIR /app
+on:
+  schedule:
+    # Run every day at 8:00 AM IST (2:30 AM UTC)
+    - cron: '30 2 * * *'
+  
+  # Allow manual trigger (test runs)
+  workflow_dispatch:
 
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-
-COPY Cargo.toml Cargo.lock ./
-COPY src ./src
-
-RUN cargo build --release --bin backend
-
-# Runtime stage
-FROM rust:latest
-
-WORKDIR /app
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    python3 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy binary from builder
-COPY --from=builder /app/target/release/backend .
-
-# Copy certs (may be empty for test.mosquitto.org mode)
-COPY certs ./certs
-
-# Copy frontend files to serve
-COPY src/frontend ./src/frontend
-
-# Create data directory for SQLite
-RUN mkdir -p /app/data
-
-# Copy capture script
-COPY capture.py ./capture.py
-
-# Health check
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
-
-EXPOSE 8080
-
-CMD ["./backend"]
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml
+      
+      - name: Run expanded job scraper
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python walkin_scraper_expanded.py
+      
+      - name: Upload job listings (artifacts)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: job-listings
+          path: |
+            walkins.csv
+            regular_jobs.csv
+          retention-days: 7
+      
+      - name: Commit CSV files to repository
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Add files
+          git add walkins.csv regular_jobs.csv || true
+          
+          # Commit if there are changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "📊 Update job listings - $(date +'%Y-%m-%d %H:%M:%S')" && git push)
+      
+      - name: Check execution status
+        if: failure()
+        run: |
+          echo "❌ Scraper failed. Check logs above."
+          exit 1
